@@ -17,12 +17,12 @@ public class ProductServiceImpl implements ProductService {
 
     KafkaTemplate<String, ProductCreatedEvent> kafkaTemplate;
 
-    public ProductServiceImpl(KafkaTemplate<String, ProductCreatedEvent> kafkaTemplate){
+    public ProductServiceImpl(KafkaTemplate<String, ProductCreatedEvent> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
     @Override
-    public String createProduct(CreateProductRequest request) {
+    public String createProduct(CreateProductRequest request) throws Exception{
 
         String productId = UUID.randomUUID().toString();
 
@@ -33,19 +33,30 @@ public class ProductServiceImpl implements ProductService {
                 .quantity(request.getQuantity())
                 .build();
 
-        CompletableFuture<SendResult<String, ProductCreatedEvent>> future =
-                kafkaTemplate.send("product-created-events-topic", productId, productCreatedEvent);
 
-        future.whenComplete((result, exception) ->{
-            if (exception != null){
-                log.error("Failed to send kafka message - {}", exception.getMessage());
-            } else {
-                log.info("Message sent successfully: {}", result.getRecordMetadata());
-            }
-        });
+        SendResult<String, ProductCreatedEvent> result =
+                kafkaTemplate.send("product-created-events-topic", productId, productCreatedEvent).get();
 
-////        will wait until the kafka response comes back
-//        future.join();
+        log.info("Partition: {}", result.getRecordMetadata().partition());
+        log.info("Topic: {}", result.getRecordMetadata().topic());
+        log.info("Topic: {}", result.getRecordMetadata().offset());
+
+
+//        this will do the same as above.
+
+//        CompletableFuture<SendResult<String, ProductCreatedEvent>> future =
+//                kafkaTemplate.send("product-created-events-topic", productId, productCreatedEvent);
+//
+//        future.whenComplete((result, exception) ->{
+//            if (exception != null){
+//                log.error("Failed to send kafka message - {}", exception.getMessage());
+//            } else {
+//                log.info("Message sent successfully: {}", result.getRecordMetadata());
+//            }
+//        });
+//
+//////        will wait until the kafka response comes back
+////        future.join();
 
         log.info("-------------Returning product id -----------");
         return productId;
