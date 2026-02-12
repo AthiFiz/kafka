@@ -1,7 +1,7 @@
 package com.fiz.product.service.impl;
 
+import com.fiz.core.ProductCreatedEvent;
 import com.fiz.product.dto.CreateProductRequest;
-import com.fiz.product.kafkaevent.ProductCreatedEvent;
 import com.fiz.product.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
