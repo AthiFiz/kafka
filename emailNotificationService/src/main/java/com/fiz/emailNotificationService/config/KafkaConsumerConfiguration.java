@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JacksonJsonDeserializer;
 
 import java.util.HashMap;
@@ -24,6 +25,11 @@ public class KafkaConsumerConfiguration {
     @Value("${spring.kafka.consumer.value-deserializer}")
     private String valueDeserializer;
 
+
+//    ErrorHandlingDeserializer will wrap around json deserializer. I will catch json deserializer exception and allow to handle them
+    @Value("${spring.kafka.consumer.error-handling-deserializer}")
+    private String errorHandlingDeserializer;
+
     @Value("${spring.kafka.consumer.group-id}")
     private String groupId;
 
@@ -36,7 +42,8 @@ public class KafkaConsumerConfiguration {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, errorHandlingDeserializer);
+        config.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, valueDeserializer);
         config.put(JacksonJsonDeserializer.TRUSTED_PACKAGES, trustedPackages);
         config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
 
